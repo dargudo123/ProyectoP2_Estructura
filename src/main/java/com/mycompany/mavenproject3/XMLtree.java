@@ -70,15 +70,12 @@ public class XMLtree {
 
         var hijos = root.getChildren();
         for (int i = 0; i < hijos.size(); i++) {
-            mostrarEstructura(
-                    hijos.get(i),
-                    sb,
-                    "",
-                    i == hijos.size() - 1
-            );
+            mostrarEstructura(hijos.get(i), sb, "", i == hijos.size() - 1);
         }
         return sb.toString();
     }
 
 }
+
+
 

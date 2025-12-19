@@ -10,18 +10,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- * @author danie
+ * Clase que representa un nodo de un árbol XML.
  */
-
 public class XMLnode {
 
-    private String tag;
-    private String text;
-
-    private Map<String, String> attributes;
-    private List<XMLnode> children;
-    private XMLnode parent;
+    private String tag; 
+    private String text; 
+    private Map<String, String> attributes; 
+    private List<XMLnode> children; 
 
     public XMLnode(String tag) {
         this.tag = tag;
@@ -34,8 +30,8 @@ public class XMLnode {
     public String getText() { return text; }
     public void setText(String text) { this.text = text; }
 
-    public void addAttribute(String k, String v) {
-        attributes.put(k, v);
+    public void addAttribute(String key, String value) {
+        attributes.put(key, value);
     }
 
     public Map<String, String> getAttributes() {
@@ -43,7 +39,6 @@ public class XMLnode {
     }
 
     public void addChild(XMLnode child) {
-        child.parent = this;
         children.add(child);
     }
 
@@ -53,6 +48,11 @@ public class XMLnode {
 
     public boolean isLeaf() {
         return children.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return "Tag: " + tag + ", Text: " + text + ", Attributes: " + attributes;
     }
 }
 

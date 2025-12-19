@@ -5,11 +5,13 @@
 package com.mycompany.mavenproject3;
 
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class XMLparser {
 
     public XMLtree parse(String xml) {
-        xml = xml.replaceAll("<\\?.*?\\?>", "").trim(); // eliminar cabecera XML
+        xml = xml.replaceAll("<\\?.*?\\?>", "").trim(); 
 
         XMLtree tree = new XMLtree();
         Stack<XMLnode> stack = new Stack<>();
@@ -22,7 +24,6 @@ public class XMLparser {
             }
 
             if (xml.charAt(i) == '<') {
-                // Cierre de etiqueta
                 if (i + 1 < xml.length() && xml.charAt(i + 1) == '/') {
                     int end = xml.indexOf('>', i);
                     String closingTag = xml.substring(i + 2, end).trim();
@@ -33,13 +34,12 @@ public class XMLparser {
 
                     XMLnode top = stack.pop();
                     if (!top.getTag().equals(closingTag)) {
-                        throw new RuntimeException("Etiqueta mal cerrada: se esperaba </" + top.getTag() + "> pero se encontró </" + closingTag + ">");
+                        throw new RuntimeException("Etiqueta mal cerrada.");
                     }
 
                     i = end + 1;
                 }
 
-                // Apertura de etiqueta
                 else {
                     int end = xml.indexOf('>', i);
                     if (end == -1) break;
@@ -49,19 +49,14 @@ public class XMLparser {
                     String tagName = parts[0];
                     XMLnode node = new XMLnode(tagName);
 
-                    // Procesar atributos si existen
                     if (parts.length > 1) {
                         String attrString = parts[1];
-                        String[] attrPairs = attrString.split("\\s+");
-                        for (String pair : attrPairs) {
-                            if (pair.contains("=")) {
-                                String[] kv = pair.split("=");
-                                if (kv.length == 2) {
-                                    String key = kv[0];
-                                    String value = kv[1].replaceAll("\"", "");
-                                    node.addAttribute(key, value);
-                                }
-                            }
+                        Pattern attrPattern = Pattern.compile("(\\w+)\\s*=\\s*\"([^\"]*)\"");
+                        Matcher matcher = attrPattern.matcher(attrString);
+                        while (matcher.find()) {
+                            String key = matcher.group(1);
+                            String value = matcher.group(2);
+                            node.addAttribute(key, value);
                         }
                     }
 
@@ -82,7 +77,12 @@ public class XMLparser {
 
                 String text = xml.substring(i, end).trim();
                 if (!text.isEmpty() && !stack.isEmpty()) {
-                    stack.peek().setText(text);
+                    XMLnode current = stack.peek();
+                    if (!current.getText().isEmpty()) {
+                        current.setText(current.getText() + " " + text);
+                    } else {
+                        current.setText(text);
+                    }
                 }
 
                 i = end;
@@ -96,3 +96,4 @@ public class XMLparser {
         return tree;
     }
 }
+
