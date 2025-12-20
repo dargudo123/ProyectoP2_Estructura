@@ -6,8 +6,8 @@ package com.mycompany.mavenproject3;
 
 public class XMLwriter {
 
-    public static void write(XMLnode node, StringBuilder sb, int indent) {
-        String pad = " ".repeat(indent);
+    public static void write(XMLnode node, StringBuilder sb, int Orientación) {
+        String pad = " ".repeat(Orientación);
 
         StringBuilder openTag = new StringBuilder("<" + node.getTag());
         for (var entry : node.getAttributes().entrySet()) {
@@ -19,11 +19,11 @@ public class XMLwriter {
         sb.append(pad).append(openTag).append("\n");
 
         if (!node.getText().isEmpty()) {
-            sb.append(" ".repeat(indent + 2)).append(node.getText()).append("\n");
+            sb.append(" ".repeat(Orientación + 2)).append(node.getText()).append("\n");
         }
 
         for (XMLnode child : node.getChildren()) {
-            write(child, sb, indent + 2);
+            write(child, sb, Orientación + 2);
         }
 
         sb.append(pad).append("</").append(node.getTag()).append(">\n");

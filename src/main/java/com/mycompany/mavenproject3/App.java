@@ -15,7 +15,7 @@ public class App extends Application {
     private XMLtree tree;
     private TextArea output;
     private TextField inputTag;
-    private TreeView<String> treeView;
+    private TreeView<XMLnode> treeView;
     private TextField newNodeTag, newNodeText;
 
     @Override
@@ -51,10 +51,7 @@ public class App extends Application {
         addNodeBtn.setOnAction(e -> agregarNodo());
         saveBtn.setOnAction(e -> guardarXML());
 
-        // ----------------- LAYOUT -----------------
         HBox topControls = new HBox(10, loadBtn, preordenBtn, estructuraBtn, saveBtn);
-        topControls.setSpacing(10);
-
         HBox searchBox = new HBox(10, new Label("Buscar:"), inputTag, searchBtn);
         HBox addNodeBox = new HBox(10, new Label("Agregar nodo:"), newNodeTag, newNodeText, addNodeBtn);
 
@@ -67,6 +64,23 @@ public class App extends Application {
                 new Label("Salida:"),
                 output
         );
+        
+        treeView.setCellFactory(tv -> new TreeCell<>() {
+            @Override
+            protected void updateItem(XMLnode node, boolean empty) {
+                super.updateItem(node, empty);
+
+                if (empty || node == null) {
+                    setText(null);
+                } else {
+                    if (node.getText().isEmpty()) {
+                        setText(node.getTag());
+                    } else {
+                        setText(node.getTag() + " : " + node.getText());
+                    }
+                }
+            }
+        });
         mainLayout.setPadding(new javafx.geometry.Insets(10));
 
         stage.setScene(new Scene(mainLayout, 700, 600));
@@ -75,6 +89,7 @@ public class App extends Application {
     }
 
     // ----------------- LÓGICA -----------------
+
     private void cargarXML() {
         try (InputStream is = new FileInputStream("sample.xml")) {
             String xml = new String(is.readAllBytes());
@@ -120,20 +135,17 @@ public class App extends Application {
         }
         StringBuilder sb = new StringBuilder();
         buscarRec(tree.getRoot(), tag, sb);
-        if (sb.length() == 0) {
-            output.setText("No se encontraron etiquetas <" + tag + ">.");
-        } else {
-            output.setText(sb.toString());
-        }
+        output.setText(sb.length() == 0
+                ? "No se encontraron etiquetas <" + tag + ">."
+                : sb.toString());
     }
 
     private void buscarRec(XMLnode node, String tag, StringBuilder sb) {
         if (node == null) return;
         if (node.getTag().equals(tag)) {
-            sb.append("Encontrado: <").append(node.getTag()).append(">\n");
-            if (!node.getAttributes().isEmpty()) {
-                sb.append("Atributos:\n");
-                node.getAttributes().forEach((k, v) -> sb.append("  ").append(k).append(" = ").append(v).append("\n"));
+            sb.append("<").append(node.getTag()).append(">\n");
+            if (!node.getText().isEmpty()) {
+                sb.append("  Texto: ").append(node.getText()).append("\n");
             }
             sb.append("\n");
         }
@@ -147,9 +159,10 @@ public class App extends Application {
             output.setText("Primero carga un XML.");
             return;
         }
-        TreeItem<String> selected = treeView.getSelectionModel().getSelectedItem();
+
+        TreeItem<XMLnode> selected = treeView.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            output.setText("Seleccione un nodo en la vista de árbol para agregar un hijo.");
+            output.setText("Seleccione un nodo en la vista de árbol.");
             return;
         }
 
@@ -160,12 +173,7 @@ public class App extends Application {
             return;
         }
 
-        // Buscar nodo en el árbol XMLnode
-        XMLnode parentNode = buscarNodoPorRuta(tree.getRoot(), selected);
-        if (parentNode == null) {
-            output.setText("Error: no se pudo encontrar el nodo seleccionado.");
-            return;
-        }
+        XMLnode parentNode = selected.getValue();
 
         XMLnode nuevo = new XMLnode(tag);
         nuevo.setText(text);
@@ -173,16 +181,6 @@ public class App extends Application {
 
         output.setText("Nodo agregado correctamente.");
         actualizarTreeView();
-    }
-
-    private XMLnode buscarNodoPorRuta(XMLnode current, TreeItem<String> selectedItem) {
-        if (current == null) return null;
-        if (current.getTag().equals(selectedItem.getValue())) return current;
-        for (XMLnode child : current.getChildren()) {
-            XMLnode res = buscarNodoPorRuta(child, selectedItem);
-            if (res != null) return res;
-        }
-        return null;
     }
 
     private void guardarXML() {
@@ -194,30 +192,22 @@ public class App extends Application {
             StringBuilder sb = new StringBuilder();
             XMLwriter.write(tree.getRoot(), sb, 0);
             writer.write(sb.toString());
-            output.setText("XML guardado en modificado.xml correctamente.");
+            output.setText("XML guardado correctamente.");
         } catch (Exception e) {
             output.setText("Error al guardar XML: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
     private void actualizarTreeView() {
-        if (tree == null || tree.isEmpty()) {
-            treeView.setRoot(null);
-            return;
-        }
-        TreeItem<String> rootItem = crearTreeItem(tree.getRoot());
+        TreeItem<XMLnode> rootItem = crearTreeItem(tree.getRoot());
         treeView.setRoot(rootItem);
         treeView.setShowRoot(true);
         rootItem.setExpanded(true);
     }
 
-    private TreeItem<String> crearTreeItem(XMLnode node) {
-        String display = node.getTag();
-        if (!node.getText().isEmpty()) {
-            display += " : " + node.getText();
-        }
-        TreeItem<String> item = new TreeItem<>(display);
+    private TreeItem<XMLnode> crearTreeItem(XMLnode node) {
+        TreeItem<XMLnode> item = new TreeItem<>(node);
+        item.setExpanded(true);
         for (XMLnode child : node.getChildren()) {
             item.getChildren().add(crearTreeItem(child));
         }
@@ -228,6 +218,7 @@ public class App extends Application {
         launch(args);
     }
 }
+
 
 
 

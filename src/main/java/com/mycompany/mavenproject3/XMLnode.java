@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Clase que representa un nodo de un árbol XML.
- */
 public class XMLnode {
 
     private String tag; 

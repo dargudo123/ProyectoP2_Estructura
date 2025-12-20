@@ -1,0 +1,35 @@
+<library>
+  <book category="fiction">
+    <title>
+      The Hitchhiker's Guide to the Galaxy
+    </title>
+    <author>
+      Douglas Adams
+    </author>
+    <year>
+      1979
+    </year>
+  </book>
+  <book category="non-fiction">
+    <title>
+      A Brief History of Time
+    </title>
+    <author>
+      Stephen Hawking
+    </author>
+    <year>
+      1988
+    </year>
+  </book>
+  <book>
+    <title>
+      Los Juegos del Hambre
+    </title>
+    <author>
+      Suzanne Collins
+    </author>
+    <year>
+      2012
+    </year>
+  </book>
+</library>
