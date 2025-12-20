@@ -5,6 +5,9 @@
     </title>
     <author>
       Douglas Adams
+      <Coauthor>
+        Jeremy Cook
+      </Coauthor>
     </author>
     <year>
       1979
@@ -23,10 +26,10 @@
   </book>
   <book>
     <title>
-      Los Juegos del Hambre
+      Los Juegos de Hambre
     </title>
     <author>
-      Suzanne Collins
+      Jessica Alba
     </author>
     <year>
       2012

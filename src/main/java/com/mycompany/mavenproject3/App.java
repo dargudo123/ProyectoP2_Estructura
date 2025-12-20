@@ -9,6 +9,9 @@ import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class App extends Application {
 
@@ -45,7 +48,7 @@ public class App extends Application {
         treeView.setPrefHeight(200);
 
         loadBtn.setOnAction(e -> cargarXML());
-        searchBtn.setOnAction(e -> buscarEtiqueta());
+        searchBtn.setOnAction(e -> buscarEtiquetaOrdenada()); // 👈 CAMBIO
         preordenBtn.setOnAction(e -> mostrarPreorden());
         estructuraBtn.setOnAction(e -> mostrarEstructura());
         addNodeBtn.setOnAction(e -> agregarNodo());
@@ -64,31 +67,28 @@ public class App extends Application {
                 new Label("Salida:"),
                 output
         );
-        
+
         treeView.setCellFactory(tv -> new TreeCell<>() {
             @Override
             protected void updateItem(XMLnode node, boolean empty) {
                 super.updateItem(node, empty);
-
                 if (empty || node == null) {
                     setText(null);
                 } else {
-                    if (node.getText().isEmpty()) {
-                        setText(node.getTag());
-                    } else {
-                        setText(node.getTag() + " : " + node.getText());
-                    }
+                    setText(node.getText().isEmpty()
+                            ? node.getTag()
+                            : node.getTag() + " : " + node.getText());
                 }
             }
         });
-        mainLayout.setPadding(new javafx.geometry.Insets(10));
 
+        mainLayout.setPadding(new javafx.geometry.Insets(10));
         stage.setScene(new Scene(mainLayout, 700, 600));
         stage.setTitle("XML Parser");
         stage.show();
     }
 
-    // ----------------- LÓGICA -----------------
+    // ---------------- LÓGICA ----------------
 
     private void cargarXML() {
         try (InputStream is = new FileInputStream("sample.xml")) {
@@ -98,10 +98,8 @@ public class App extends Application {
 
             output.setText("XML cargado correctamente.");
             actualizarTreeView();
-
         } catch (Exception e) {
             output.setText("Error al cargar XML: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -123,34 +121,61 @@ public class App extends Application {
         output.setText(tree.getEstructura());
     }
 
-    private void buscarEtiqueta() {
+    // HEAP
+
+    private void buscarEtiquetaOrdenada() {
         if (tree == null || tree.isEmpty()) {
             output.setText("Primero carga un XML.");
             return;
         }
+
         String tag = inputTag.getText().trim();
         if (tag.isEmpty()) {
             output.setText("Ingrese una etiqueta.");
             return;
         }
+
+        List<String> valores = new ArrayList<>();
+        recolectarValores(tree.getRoot(), tag, valores);
+
+        if (valores.isEmpty()) {
+            return;
+        }
+
+        Comparator<String> cmp = (a, b) -> a.compareTo(b);
+        Heap<String> heap = new Heap<>(valores.size(), false, cmp);
+
+        for (String v : valores) {
+            heap.encolar(v);
+        }
+
         StringBuilder sb = new StringBuilder();
-        buscarRec(tree.getRoot(), tag, sb);
-        output.setText(sb.length() == 0
-                ? "No se encontraron etiquetas <" + tag + ">."
-                : sb.toString());
+        sb.append("Valores <").append(tag).append(">\n");
+
+        while (!heap.estaVacio()) {
+            sb.append(heap.desencolar()).append("\n");
+        }
+
+        output.setText(sb.toString());
     }
 
-    private void buscarRec(XMLnode node, String tag, StringBuilder sb) {
+
+    private void recolectarValores(XMLnode node, String tag, List<String> valores) {
         if (node == null) return;
+
         if (node.getTag().equals(tag)) {
-            sb.append("<").append(node.getTag()).append(">\n");
+
             if (!node.getText().isEmpty()) {
-                sb.append("  Texto: ").append(node.getText()).append("\n");
+                valores.add(node.getText());
             }
-            sb.append("\n");
+
+            for (String value : node.getAttributes().values()) {
+                valores.add(value);
+            }
         }
+
         for (XMLnode child : node.getChildren()) {
-            buscarRec(child, tag, sb);
+            recolectarValores(child, tag, valores);
         }
     }
 
@@ -174,7 +199,6 @@ public class App extends Application {
         }
 
         XMLnode parentNode = selected.getValue();
-
         XMLnode nuevo = new XMLnode(tag);
         nuevo.setText(text);
         parentNode.addChild(nuevo);
@@ -188,6 +212,7 @@ public class App extends Application {
             output.setText("Primero carga un XML.");
             return;
         }
+
         try (FileWriter writer = new FileWriter("modificado.xml")) {
             StringBuilder sb = new StringBuilder();
             XMLwriter.write(tree.getRoot(), sb, 0);
@@ -218,6 +243,7 @@ public class App extends Application {
         launch(args);
     }
 }
+
 
 
 

@@ -29,7 +29,7 @@ public class XMLparser {
                     String closingTag = xml.substring(i + 2, end).trim();
 
                     if (stack.isEmpty()) {
-                        throw new RuntimeException("Cierre inesperado: </" + closingTag + ">");
+                        throw new RuntimeException("Cierre incorrecto: </" + closingTag + ">");
                     }
 
                     XMLnode top = stack.pop();

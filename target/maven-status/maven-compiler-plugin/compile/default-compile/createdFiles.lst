@@ -6,3 +6,4 @@ module-info.class
 com\mycompany\mavenproject3\XMLparser.class
 com\mycompany\mavenproject3\XMLtree.class
 com\mycompany\mavenproject3\App.class
+com\mycompany\mavenproject3\Heap.class
